@@ -1,4 +1,4 @@
-package hipchat
+package jirachat
 
 import "errors"
 

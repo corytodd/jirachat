@@ -27,7 +27,7 @@ type SlackClient struct {
 
 // NewClient returns a new HipChat API client. You must provide a valid
 // AuthToken retrieved from your HipChat account.
-func NewClient(authToken string, client *http.Client) *SlackClient {
+func NewSlackClient(authToken string, client *http.Client) *SlackClient {
 
 	c := &SlackClient{
 		authToken: authToken,
