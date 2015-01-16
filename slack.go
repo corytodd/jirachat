@@ -9,20 +9,22 @@ import (
 	"net/url"
 )
 
-var slackEndPoints = map[API_TARGET]string{
-	chatPostMessage: "https://slack.com/api/chat.postMessage",
+var slackEndPoints = map[EndPoint]string{
+	base:            "https://slack.com/api/",
+	chatPostMessage: "chat.postMessage",
 }
 
-type API_TARGET int
+type EndPoint int
 
 const (
-	chatPostMessage API_TARGET = iota
+	chatPostMessage EndPoint = iota
+	base
 )
 
 type SlackClient struct {
 	authToken string
 	client    *http.Client
-	Room      *ChannelService
+	Channel   *ChannelService
 }
 
 // NewClient returns a new HipChat API client. You must provide a valid
@@ -33,7 +35,7 @@ func NewSlackClient(authToken string, client *http.Client) *SlackClient {
 		authToken: authToken,
 		client:    client,
 	}
-	c.Room = &ChannelService{client: c}
+	c.Channel = &ChannelService{client: c}
 	return c
 }
 

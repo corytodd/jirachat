@@ -7,8 +7,8 @@ const jira_img = "https://dujrsrsgsd3nh.cloudfront.net/img/emoticons/jira-135007
 // This is a json response for a JIRA webhook (more or less) according to
 //https://developer.atlassian.com/display/JIRADEV/JIRA+Webhooks+Overview
 type JiraWebevent struct {
-	Id           string        `json:"id,string,omitempty"`
-	Timestamp    int           `json:"timestamp,omitempty"`
+	Id           int           `json:"id,omitempty"`
+	Timestamp    string        `json:"timestamp,omitempty"`
 	Issue        JiraIssue     `json:"issue"`
 	User         JiraUser      `json:"user"`
 	Changelog    JiraChangelog `json:"changelog"`
@@ -25,17 +25,17 @@ type JiraIssue struct {
 }
 
 type JiraUser struct {
-	Self         string   `json:"self"`
-	Name         string   `json:"name"`
-	EmailAddress string   `json:"emailAddress"`
-	AvatarUrls   []string `json:"avatarUrls"`
-	DisplayName  string   `json:"displayName"`
-	Active       bool     `json:"active"`
+	Self         string      `json:"self"`
+	Name         string      `json:"name"`
+	EmailAddress string      `json:"emailAddress"`
+	AvatarUrls   interface{} `json:"avatarUrls"`
+	DisplayName  string      `json:"displayName"`
+	Active       string      `json:"active"`
 }
 
 type JiraChangelog struct {
 	Items map[string]interface{} `json:"items"`
-	Id    int                    `json:"id,string,omitempty"`
+	Id    int                    `json:"id,omitempty"`
 }
 
 type JiraComment struct {
@@ -60,14 +60,14 @@ func (j *JiraUser) SmallAvatar() (string, error) {
 	//if !ok {
 	//	return jira_img, errors.New("jirauser: No URL found")
 	//}
-	return j.AvatarUrls[0], nil
+	return "", nil //j.AvatarUrls[0], nil
 }
 func (j *JiraUser) LargeAvatar() (string, error) {
 	//result, ok := j.AvatarUrls["48x48"].(string)
 	//if !ok {
 	//	return jira_img, errors.New("jirauser: No URL found")
 	//}
-	return j.AvatarUrls[1], nil
+	return "", nil //j.AvatarUrls[1], nil
 }
 func (f *JiraIssue) GetSummary() (string, error) {
 	//result, ok := f.Fields["summary"].(string)
