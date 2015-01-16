@@ -9,51 +9,31 @@ import (
 	"net/url"
 )
 
+var slackEndPoints = map[API_TARGET]string{
+	chatPostMessage: "https://slack.com/api/chat.postMessage",
+}
+
+type API_TARGET int
+
 const (
-	defaultBaseURL = "https://api.hipchat.com/v2/"
+	chatPostMessage API_TARGET = iota
 )
 
-// Client manages the communication with the HipChat API.
-type Client struct {
+type SlackClient struct {
 	authToken string
-	baseURL   *url.URL
 	client    *http.Client
-	// Room gives access to the /room part of the API.
-	Room *RoomService
-}
-
-// Links represents the HipChat default links.
-type Links struct {
-	Self string `json:"self"`
-}
-
-// PageLinks represents the HipChat page links.
-type PageLinks struct {
-	Links
-	Prev string `json:"prev"`
-	Next string `json:"next"`
-}
-
-// ID represents a HipChat id.
-// Use a separate struct because it can be a string or a int.
-type ID struct {
-	ID string `json:"id"`
+	Room      *ChannelService
 }
 
 // NewClient returns a new HipChat API client. You must provide a valid
 // AuthToken retrieved from your HipChat account.
-func NewClient(authToken string, client *http.Client) *Client {
-	baseURL, err := url.Parse(defaultBaseURL)
-	if err != nil {
-		panic(err)
-	}
+func NewClient(authToken string, client *http.Client) *SlackClient {
 
-	c := &Client{
+	c := &SlackClient{
 		authToken: authToken,
-		baseURL:   baseURL,
 		client:    client,
 	}
-	c.Room = &RoomService{client: c}
+	c.Room = &ChannelService{client: c}
 	return c
 }
 
@@ -61,13 +41,11 @@ func NewClient(authToken string, client *http.Client) *Client {
 // API request not implemented in this library. Otherwise it should not be
 // be used directly.
 // Relative URLs should always be specified without a preceding slash.
-func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Request, error) {
-	rel, err := url.Parse(urlStr)
+func (c *SlackClient) NewRequest(method, urlStr string, body interface{}) (*http.Request, error) {
+	_, err := url.Parse(urlStr)
 	if err != nil {
 		return nil, err
 	}
-
-	u := c.baseURL.ResolveReference(rel)
 
 	buf := new(bytes.Buffer)
 	if body != nil {
@@ -77,7 +55,7 @@ func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Requ
 		}
 	}
 
-	req, err := http.NewRequest(method, u.String(), buf)
+	req, err := http.NewRequest(method, urlStr, buf)
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +69,7 @@ func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Requ
 // and stored in the value pointed by v.
 // Do can be used to perform the request created with NewRequest, as the latter
 // it should be used only for API requests not implemented in this library.
-func (c *Client) Do(req *http.Request, v interface{}) (*http.Response, error) {
+func (c *SlackClient) Do(req *http.Request, v interface{}) (*http.Response, error) {
 	resp, err := c.client.Do(req)
 	if err != nil {
 		return nil, err

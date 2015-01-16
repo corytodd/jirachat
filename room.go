@@ -7,7 +7,7 @@ import (
 
 // RoomService gives access to the room related methods of the API.
 type RoomService struct {
-	client *Client
+	client *HipClient
 }
 
 // Rooms represents a HipChat room list.
@@ -30,8 +30,8 @@ type Room struct {
 	Privacy           string         `json:"privacy"`
 	IsGuestAccessible bool           `json:"is_guess_accessible"`
 	Topic             string         `json:"topic"`
-	Participants      []User         `json:"participants"`
-	Owner             User           `json:"owner"`
+	Participants      []HipChatUser  `json:"participants"`
+	Owner             HipChatUser    `json:"owner"`
 	GuestAccessURL    string         `json:"guest_access_url"`
 }
 
@@ -94,13 +94,13 @@ type History struct {
 
 // Message represents a HipChat message.
 type Message struct {
-	Date          string      `json:"date"`
-	From          interface{} `json:"from"` // string | obj <- weak
-	Id            string      `json:"id"`
-	Mentions      []User      `json:"mentions"`
-	Message       string      `json:"message"`
-	MessageFormat string      `json:"message_format"`
-	Type          string      `json:"type"`
+	Date          string        `json:"date"`
+	From          interface{}   `json:"from"` // string | obj <- weak
+	Id            string        `json:"id"`
+	Mentions      []HipChatUser `json:"mentions"`
+	Message       string        `json:"message"`
+	MessageFormat string        `json:"message_format"`
+	Type          string        `json:"type"`
 }
 
 // List returns all the rooms authorized.

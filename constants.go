@@ -13,3 +13,7 @@ const (
 
 	ResponseStatusSent = "sent"
 )
+
+const (
+	PARSE_FULL = "full"
+)

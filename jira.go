@@ -1,4 +1,4 @@
-package jirachat
+package hipchat
 
 import "errors"
 
@@ -17,11 +17,11 @@ type JiraWebevent struct {
 }
 
 type JiraIssue struct {
-	Expand string   `json:"expand"`
-	Id     string   `json:"id"`
-	Self   string   `json:"self"`
-	Key    string   `json:"key"`
-	Fields []string `json:"fields"`
+	Expand string    `json:"expand"`
+	Id     string    `json:"id"`
+	Self   string    `json:"self"`
+	Key    string    `json:"key"`
+	Fields FieldData `json:"fields"`
 }
 
 type JiraUser struct {
@@ -48,47 +48,54 @@ type JiraComment struct {
 	Updated      string   `json:"updated"`
 }
 
+type FieldData struct {
+	Summary     string `json:"summary"`
+	Created     string `json:"created"`
+	Description string `json:"description"`
+	Priority    string `json:"priority"`
+}
+
 func (j *JiraUser) SmallAvatar() (string, error) {
-	result, ok := j.AvatarUrls["16x16"].(string)
-	if !ok {
-		return jira_img, errors.New("jirauser: No URL found")
-	}
-	return result, nil
+	//result, ok := j.AvatarUrls["16x16"].(string)
+	//if !ok {
+	//	return jira_img, errors.New("jirauser: No URL found")
+	//}
+	return j.AvatarUrls[0], nil
 }
 func (j *JiraUser) LargeAvatar() (string, error) {
-	result, ok := j.AvatarUrls["48x48"].(string)
-	if !ok {
-		return jira_img, errors.New("jirauser: No URL found")
-	}
-	return result, nil
+	//result, ok := j.AvatarUrls["48x48"].(string)
+	//if !ok {
+	//	return jira_img, errors.New("jirauser: No URL found")
+	//}
+	return j.AvatarUrls[1], nil
 }
 func (f *JiraIssue) GetSummary() (string, error) {
-	result, ok := f.Fields["summary"].(string)
-	if !ok {
-		return "", errors.New("jiraissue: No summary")
-	}
-	return result, nil
+	//result, ok := f.Fields["summary"].(string)
+	//if !ok {
+	//	return "", errors.New("jiraissue: No summary")
+	//}
+	return f.Fields.Summary, nil
 }
 func (f *JiraIssue) GetCreatedDate() (string, error) {
-	result, ok := f.Fields["created"].(string)
-	if !ok {
-		return "", errors.New("jiraissue: No creation date")
-	}
-	return result, nil
+	//result, ok := f.Fields["created"].(string)
+	//if !ok {
+	//	return "", errors.New("jiraissue: No creation date")
+	//}
+	return f.Fields.Created, nil
 }
 func (f *JiraIssue) GetDescription() (string, error) {
-	result, ok := f.Fields["description"].(string)
-	if !ok {
-		return "", errors.New("jiraissue: No description")
-	}
-	return result, nil
+	//result, ok := f.Fields["description"].(string)
+	//if !ok {
+	//	return "", errors.New("jiraissue: No description")
+	//}
+	return f.Fields.Description, nil
 }
 func (f *JiraIssue) GetPriority() (string, error) {
-	result, ok := f.Fields["priority"].(string)
-	if !ok {
-		return "", errors.New("jiraissue: No priority")
-	}
-	return result, nil
+	//result, ok := f.Fields["priority"].(string)
+	//if !ok {
+	//	return "", errors.New("jiraissue: No priority")
+	//}
+	return f.Fields.Priority, nil
 }
 
 //TODO add JiraIssue.Fields.labels function(s)
