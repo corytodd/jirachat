@@ -25,12 +25,12 @@ type JiraIssue struct {
 }
 
 type JiraUser struct {
-	Self         string      `json:"self"`
-	Name         string      `json:"name"`
-	EmailAddress string      `json:"emailAddress"`
-	AvatarUrls   interface{} `json:"avatarUrls"`
-	DisplayName  string      `json:"displayName"`
-	Active       string      `json:"active"`
+	Self         string            `json:"self"`
+	Name         string            `json:"name"`
+	EmailAddress string            `json:"emailAddress"`
+	AvatarUrls   map[string]string `json:"avatarUrls"`
+	DisplayName  string            `json:"displayName"`
+	Active       string            `json:"active"`
 }
 
 type JiraChangelog struct {
@@ -53,21 +53,14 @@ type FieldData struct {
 	Created     string `json:"created"`
 	Description string `json:"description"`
 	Priority    string `json:"priority"`
+	Assignee    string `json:"assignee"`
 }
 
-func (j *JiraUser) SmallAvatar() (string, error) {
-	//result, ok := j.AvatarUrls["16x16"].(string)
-	//if !ok {
-	//	return jira_img, errors.New("jirauser: No URL found")
-	//}
-	return "", nil //j.AvatarUrls[0], nil
+func (j *JiraUser) SmallAvatar() string {
+	return j.AvatarUrls["16x16"]
 }
-func (j *JiraUser) LargeAvatar() (string, error) {
-	//result, ok := j.AvatarUrls["48x48"].(string)
-	//if !ok {
-	//	return jira_img, errors.New("jirauser: No URL found")
-	//}
-	return "", nil //j.AvatarUrls[1], nil
+func (j *JiraUser) LargeAvatar() string {
+	return j.AvatarUrls["48x48"]
 }
 func (f *JiraIssue) GetSummary() (string, error) {
 	//result, ok := f.Fields["summary"].(string)
