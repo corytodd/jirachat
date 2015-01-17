@@ -1,6 +1,11 @@
 package jirachat
 
-import "errors"
+import (
+	"encoding/json"
+	"errors"
+	"io/ioutil"
+	"net/http"
+)
 
 const jira_img = "https://dujrsrsgsd3nh.cloudfront.net/img/emoticons/jira-1350074257.png"
 
@@ -62,34 +67,6 @@ func (j *JiraUser) SmallAvatar() string {
 func (j *JiraUser) LargeAvatar() string {
 	return j.AvatarUrls["48x48"]
 }
-func (f *JiraIssue) GetSummary() (string, error) {
-	//result, ok := f.Fields["summary"].(string)
-	//if !ok {
-	//	return "", errors.New("jiraissue: No summary")
-	//}
-	return f.Fields.Summary, nil
-}
-func (f *JiraIssue) GetCreatedDate() (string, error) {
-	//result, ok := f.Fields["created"].(string)
-	//if !ok {
-	//	return "", errors.New("jiraissue: No creation date")
-	//}
-	return f.Fields.Created, nil
-}
-func (f *JiraIssue) GetDescription() (string, error) {
-	//result, ok := f.Fields["description"].(string)
-	//if !ok {
-	//	return "", errors.New("jiraissue: No description")
-	//}
-	return f.Fields.Description, nil
-}
-func (f *JiraIssue) GetPriority() (string, error) {
-	//result, ok := f.Fields["priority"].(string)
-	//if !ok {
-	//	return "", errors.New("jiraissue: No priority")
-	//}
-	return f.Fields.Priority, nil
-}
 
 //TODO add JiraIssue.Fields.labels function(s)
 
@@ -134,4 +111,20 @@ func (f *JiraChangelog) GetField() (string, error) {
 		return "", errors.New("jirachangelog: No field")
 	}
 	return result, nil
+}
+
+// Parse the request body as a JIRA webhook event
+// Returns a new JiraWebEvent object or error
+func Parse(r *http.Request) (JiraWebevent, error) {
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		panic(err)
+	}
+
+	var event JiraWebevent
+
+	// This will generate a error unmarshaling some of the data but
+	// is is safe to ignore.
+	err = json.Unmarshal(body, &event)
+	return event, err
 }

@@ -64,11 +64,10 @@ type Field struct {
 // ConstructSlackMessage for issue_updated type
 func (s *SlackService) IssueUpdated(event JiraWebevent) error {
 	payload := Payload{}
-	summary, _ := event.Issue.GetSummary()
 	fields := []Field{
 		Field{
 			Title: "Issue",
-			Value: summary,
+			Value: event.Issue.Fields.Summary,
 			Short: false,
 		},
 		Field{
@@ -99,11 +98,10 @@ func (s *SlackService) IssueUpdated(event JiraWebevent) error {
 // ConstructSlackMessage for issue_created type
 func (s *SlackService) IssueCreated(event JiraWebevent) error {
 	payload := Payload{}
-	summary, _ := event.Issue.GetSummary()
 	fields := []Field{
 		Field{
 			Title: "Summary",
-			Value: summary,
+			Value: event.Issue.Fields.Summary,
 			Short: false,
 		},
 		Field{
@@ -139,11 +137,10 @@ func (s *SlackService) IssueCreated(event JiraWebevent) error {
 // ConstructSlackMessage for issue_deleted type
 func (s *SlackService) IssueDeleted(event JiraWebevent) error {
 	payload := Payload{}
-	summary, _ := event.Issue.GetSummary()
 	fields := []Field{
 		Field{
 			Title: "Issue",
-			Value: summary,
+			Value: event.Issue.Fields.Summary,
 			Short: false,
 		},
 		Field{
@@ -174,11 +171,10 @@ func (s *SlackService) IssueDeleted(event JiraWebevent) error {
 // ConstructSlackMessage for worklog updates
 func (s *SlackService) WorklogUpdated(event JiraWebevent) error {
 	payload := Payload{}
-	summary, _ := event.Issue.GetSummary()
 	fields := []Field{
 		Field{
 			Title: "Issue",
-			Value: summary,
+			Value: event.Issue.Fields.Summary,
 			Short: false,
 		},
 		Field{

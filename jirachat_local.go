@@ -7,7 +7,7 @@ import (
 )
 
 //In the local context, return a normal http.Client
-func GetHttpClient(r *http.Request) (http.Client, error) {
+func getHttpClient(r *http.Request) http.Client {
 	var client http.Client
-	return client, nil
+	return client
 }

@@ -11,7 +11,6 @@ import (
 var slackEndPoints = map[EndPoint]string{
 	base:            "https://slack.com/api/",
 	chatPostMessage: "chat.postMessage",
-	webHook:         "https://hooks.slack.com/services/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",
 }
 
 type EndPoint int
@@ -29,6 +28,7 @@ type SlackConfig struct {
 	BotName string
 	Emoji   string
 	Client  http.Client
+	Webhook string
 }
 
 type SlackService struct {
@@ -37,7 +37,7 @@ type SlackService struct {
 
 // Create a new slack with the given config
 func NewSlacker(r *http.Request, config *SlackConfig) *SlackService {
-	client, _ := GetHttpClient(r)
+	client := getHttpClient(r)
 	config.Client = client
 	svc := &SlackService{Config: config}
 	return svc

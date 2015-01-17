@@ -1,5 +1,6 @@
 package jirachat
 
+// Hipchat specific
 const (
 	ColorYellow = "yellow"
 	ColorRed    = "red"
@@ -14,6 +15,7 @@ const (
 	ResponseStatusSent = "sent"
 )
 
+// Slack specific
 const (
 	PARSE_FULL = "full"
 )

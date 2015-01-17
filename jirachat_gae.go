@@ -12,6 +12,6 @@ import (
 
 //In the appengine context, return an http.Client with an appengine context
 //using urlfetch transport
-func GetHttpClient(r *http.Request) (http.Client, error) {
-	return http.Client{Transport: &urlfetch.Transport{Context: appengine.NewContext(r)}}, nil
+func getHttpClient(r *http.Request) http.Client {
+	return http.Client{Transport: &urlfetch.Transport{Context: appengine.NewContext(r)}}
 }

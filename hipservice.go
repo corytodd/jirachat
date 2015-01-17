@@ -15,7 +15,7 @@ const (
 )
 
 // Client manages the communication with the HipChat API.
-type HipClient struct {
+type HipConfig struct {
 	authToken string
 	baseURL   *url.URL
 	client    *http.Client
@@ -42,16 +42,13 @@ type ID struct {
 
 // NewClient returns a new HipChat API client. You must provide a valid
 // AuthToken retrieved from your HipChat account.
-func NewHipClient(authToken string, client *http.Client) *HipClient {
-	baseURL, err := url.Parse(defaultBaseURL)
-	if err != nil {
-		panic(err)
-	}
+func NewHipService(r *http.Request, config *HipConfig) *HipService {
 
 	c := &HipClient{
 		authToken: authToken,
 		baseURL:   baseURL,
-		client:    client,
+		client:    	client := getHttpClient(r)
+,
 	}
 	c.Room = &RoomService{client: c}
 	return c
