@@ -8,11 +8,6 @@ import (
 	"strings"
 )
 
-var slackEndPoints = map[EndPoint]string{
-	base:            "https://slack.com/api/",
-	chatPostMessage: "chat.postMessage",
-}
-
 type EndPoint int
 
 const (
@@ -22,32 +17,31 @@ const (
 )
 
 type SlackConfig struct {
-	ErrChan string
-	Channel string
-	Token   string
-	BotName string
-	Emoji   string
-	Client  http.Client
-	Webhook string
+	ErrChan    string
+	Channel    string
+	Token      string
+	BotName    string
+	Emoji      string
+	WebhookUrl string
+	client_    http.Client
 }
 
-type SlackService struct {
-	Config *SlackConfig
+type slackService struct {
+	config_ *SlackConfig
 }
 
 // Create a new slack with the given config
-func NewSlacker(r *http.Request, config *SlackConfig) *SlackService {
+func NewSlackService(r *http.Request, config *SlackConfig) *slackService {
 	client := getHttpClient(r)
-	config.Client = client
-	svc := &SlackService{Config: config}
+	config.client_ = client
+	svc := &slackService{config_: config}
 	return svc
 }
 
 // sendEvent sends Payload which contains JIRA data to Slack.
 func (p *Payload) sendEvent(config *SlackConfig) error {
-
 	data, err := json.Marshal(p)
-	resp, err := config.Client.Post(slackEndPoints[webHook], "application/json",
+	resp, err := config.client_.Post(config.WebhookUrl, "application/json",
 		strings.NewReader(string(data)))
 	if err != nil {
 		constructSlackError(fmt.Sprintf("%v", err), config.ErrChan)
@@ -72,8 +66,8 @@ func constructSlackError(msg, channel string) *Payload {
 	}
 
 	attachment := Attachment{
-		Fallback: "Error occured on enotify-slack",
-		Pretext:  "Error occured on enotify-slack",
+		Fallback: "Error occured on jirachat-slack",
+		Pretext:  "Error occured on jirachat-slack",
 		Color:    "#FF0000",
 		Fields:   fields,
 	}

@@ -62,7 +62,7 @@ type Field struct {
 }
 
 // ConstructSlackMessage for issue_updated type
-func (s *SlackService) IssueUpdated(event JiraWebevent) error {
+func (s *slackService) IssueUpdated(event JIRAWebevent) error {
 	payload := Payload{}
 	fields := []Field{
 		Field{
@@ -86,17 +86,17 @@ func (s *SlackService) IssueUpdated(event JiraWebevent) error {
 		Fields: fields,
 	}
 
-	payload.Channel = s.Config.Channel
-	payload.Username = s.Config.BotName
+	payload.Channel = s.config_.Channel
+	payload.Username = s.config_.BotName
 	payload.Icon_url = event.User.LargeAvatar()
 	payload.Unfurl_links = true
 	payload.Text = ""
 	payload.Attachments = []Attachment{attachment}
-	return payload.sendEvent(s.Config)
+	return payload.sendEvent(s.config_)
 }
 
 // ConstructSlackMessage for issue_created type
-func (s *SlackService) IssueCreated(event JiraWebevent) error {
+func (s *slackService) IssueCreated(event JIRAWebevent) error {
 	payload := Payload{}
 	fields := []Field{
 		Field{
@@ -125,17 +125,17 @@ func (s *SlackService) IssueCreated(event JiraWebevent) error {
 		Fields: fields,
 	}
 
-	payload.Channel = s.Config.Channel
-	payload.Username = s.Config.BotName
+	payload.Channel = s.config_.Channel
+	payload.Username = s.config_.BotName
 	payload.Icon_url = event.User.LargeAvatar()
 	payload.Unfurl_links = true
 	payload.Text = ""
 	payload.Attachments = []Attachment{attachment}
-	return payload.sendEvent(s.Config)
+	return payload.sendEvent(s.config_)
 }
 
 // ConstructSlackMessage for issue_deleted type
-func (s *SlackService) IssueDeleted(event JiraWebevent) error {
+func (s *slackService) IssueDeleted(event JIRAWebevent) error {
 	payload := Payload{}
 	fields := []Field{
 		Field{
@@ -159,17 +159,17 @@ func (s *SlackService) IssueDeleted(event JiraWebevent) error {
 		Fields: fields,
 	}
 
-	payload.Channel = s.Config.Channel
-	payload.Username = s.Config.BotName
+	payload.Channel = s.config_.Channel
+	payload.Username = s.config_.BotName
 	payload.Icon_url = event.User.LargeAvatar()
 	payload.Unfurl_links = true
 	payload.Text = ""
 	payload.Attachments = []Attachment{attachment}
-	return payload.sendEvent(s.Config)
+	return payload.sendEvent(s.config_)
 }
 
 // ConstructSlackMessage for worklog updates
-func (s *SlackService) WorklogUpdated(event JiraWebevent) error {
+func (s *slackService) WorklogUpdated(event JIRAWebevent) error {
 	payload := Payload{}
 	fields := []Field{
 		Field{
@@ -193,11 +193,11 @@ func (s *SlackService) WorklogUpdated(event JiraWebevent) error {
 		Fields: fields,
 	}
 
-	payload.Channel = s.Config.Channel
-	payload.Username = s.Config.BotName
+	payload.Channel = s.config_.Channel
+	payload.Username = s.config_.BotName
 	payload.Icon_url = event.User.LargeAvatar()
 	payload.Unfurl_links = true
 	payload.Text = ""
 	payload.Attachments = []Attachment{attachment}
-	return payload.sendEvent(s.Config)
+	return payload.sendEvent(s.config_)
 }

@@ -2,7 +2,6 @@ package jirachat
 
 import (
 	"encoding/json"
-	"errors"
 	"io/ioutil"
 	"net/http"
 )
@@ -11,25 +10,25 @@ const jira_img = "https://dujrsrsgsd3nh.cloudfront.net/img/emoticons/jira-135007
 
 // This is a json response for a JIRA webhook (more or less) according to
 //https://developer.atlassian.com/display/JIRADEV/JIRA+Webhooks+Overview
-type JiraWebevent struct {
+type JIRAWebevent struct {
 	Id           int           `json:"id,omitempty"`
 	Timestamp    string        `json:"timestamp,omitempty"`
-	Issue        JiraIssue     `json:"issue"`
-	User         JiraUser      `json:"user"`
-	Changelog    JiraChangelog `json:"changelog"`
-	Comment      JiraComment   `json:"comment"`
+	Issue        JIRAIssue     `json:"issue"`
+	User         JIRAUser      `json:"user"`
+	Changelog    JIRAChangelog `json:"changelog"`
+	Comment      JIRAComment   `json:"comment"`
 	WebhookEvent string        `json:"webhookEvent"`
 }
 
-type JiraIssue struct {
-	Expand string    `json:"expand"`
-	Id     string    `json:"id"`
-	Self   string    `json:"self"`
-	Key    string    `json:"key"`
-	Fields FieldData `json:"fields"`
+type JIRAIssue struct {
+	Expand string         `json:"expand"`
+	Id     string         `json:"id"`
+	Self   string         `json:"self"`
+	Key    string         `json:"key"`
+	Fields IssueFieldData `json:"fields"`
 }
 
-type JiraUser struct {
+type JIRAUser struct {
 	Self         string            `json:"self"`
 	Name         string            `json:"name"`
 	EmailAddress string            `json:"emailAddress"`
@@ -38,22 +37,33 @@ type JiraUser struct {
 	Active       string            `json:"active"`
 }
 
-type JiraChangelog struct {
-	Items map[string]interface{} `json:"items"`
-	Id    int                    `json:"id,omitempty"`
+// Some of the ChangeLogItems may through unmarshal errors but they don't seem
+// to cause any major issues
+type JIRAChangelog struct {
+	Items []ChangleLogItems `json:"items,omitempty"`
+	Id    int               `json:"id,omitempty"`
 }
 
-type JiraComment struct {
+type ChangleLogItems struct {
+	ToString   string `json:"toString"`
+	To         string `json:"to"`
+	FromString string `json:"fromString"`
+	From       string `json:"from"`
+	FieldType  string `json:fieldtype"`
+	Field      string `json:"field"`
+}
+
+type JIRAComment struct {
 	Self         string   `json:"self"`
 	Id           string   `json:"id"`
-	Author       JiraUser `json:"author"`
+	Author       JIRAUser `json:"author"`
 	Body         string   `json:"body"`
-	UpdateAuthor JiraUser `json:"updateAuthor"`
+	UpdateAuthor JIRAUser `json:"updateAuthor"`
 	Created      string   `json:"created"`
 	Updated      string   `json:"updated"`
 }
 
-type FieldData struct {
+type IssueFieldData struct {
 	Summary     string `json:"summary"`
 	Created     string `json:"created"`
 	Description string `json:"description"`
@@ -61,67 +71,25 @@ type FieldData struct {
 	Assignee    string `json:"assignee"`
 }
 
-func (j *JiraUser) SmallAvatar() string {
+// For the avatars, use getter methods because the names start with numbers
+func (j *JIRAUser) SmallAvatar() string {
 	return j.AvatarUrls["16x16"]
 }
-func (j *JiraUser) LargeAvatar() string {
+func (j *JIRAUser) LargeAvatar() string {
 	return j.AvatarUrls["48x48"]
 }
 
-//TODO add JiraIssue.Fields.labels function(s)
-
-func (f *JiraChangelog) GetToString() (string, error) {
-	result, ok := f.Items["toString"].(string)
-	if !ok {
-		return "", errors.New("jirachangelog: No toString")
-	}
-	return result, nil
-}
-func (f *JiraChangelog) GetTo() (string, error) {
-	result, ok := f.Items["to"].(string)
-	if !ok {
-		return "", errors.New("jirachangelog: No to")
-	}
-	return result, nil
-}
-func (f *JiraChangelog) GetFromString() (string, error) {
-	result, ok := f.Items["fromString"].(string)
-	if !ok {
-		return "", errors.New("jirachangelog: No fromString")
-	}
-	return result, nil
-}
-func (f *JiraChangelog) GetFrom() (string, error) {
-	result, ok := f.Items["from"].(string)
-	if !ok {
-		return "", errors.New("jirachangelog: No from")
-	}
-	return result, nil
-}
-func (f *JiraChangelog) GetFieldType() (string, error) {
-	result, ok := f.Items["fieldtype"].(string)
-	if !ok {
-		return "", errors.New("jirachangelog: No fieldtype")
-	}
-	return result, nil
-}
-func (f *JiraChangelog) GetField() (string, error) {
-	result, ok := f.Items["field"].(string)
-	if !ok {
-		return "", errors.New("jirachangelog: No field")
-	}
-	return result, nil
-}
+//TODO add JIRAIssue.Fields.labels function(s)
 
 // Parse the request body as a JIRA webhook event
 // Returns a new JiraWebEvent object or error
-func Parse(r *http.Request) (JiraWebevent, error) {
+func Parse(r *http.Request) (JIRAWebevent, error) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		panic(err)
 	}
 
-	var event JiraWebevent
+	var event JIRAWebevent
 
 	// This will generate a error unmarshaling some of the data but
 	// is is safe to ignore.
