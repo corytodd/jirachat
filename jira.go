@@ -12,7 +12,7 @@ const jira_img = "https://dujrsrsgsd3nh.cloudfront.net/img/emoticons/jira-135007
 //https://developer.atlassian.com/display/JIRADEV/JIRA+Webhooks+Overview
 type JIRAWebevent struct {
 	Id           int           `json:"id,omitempty"`
-	Timestamp    string        `json:"timestamp,omitempty"`
+	Timestamp    int           `json:"timestamp,omitempty"`
 	Issue        JIRAIssue     `json:"issue"`
 	User         JIRAUser      `json:"user"`
 	Changelog    JIRAChangelog `json:"changelog"`
