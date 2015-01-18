@@ -1,5 +1,7 @@
 package jirachat
 
+const VERSION = "1.0"
+
 // Hipchat specific
 const (
 	ColorYellow = "yellow"
