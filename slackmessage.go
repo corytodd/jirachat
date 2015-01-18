@@ -82,7 +82,7 @@ func (s *slackService) IssueUpdated(event JIRAWebevent) error {
 			event.Issue.Self, event.Issue.Key),
 		Pretext: fmt.Sprintf("%s Commented on <%s|%s>", event.User.DisplayName,
 			event.Issue.Self, event.Issue.Key),
-		Color:  "good",
+		Color:  event.getPriorityColor(),
 		Fields: fields,
 	}
 
@@ -121,7 +121,7 @@ func (s *slackService) IssueCreated(event JIRAWebevent) error {
 			event.Issue.Self, event.Issue.Key),
 		Pretext: fmt.Sprintf("%s Created on <%s|%s>", event.User.DisplayName,
 			event.Issue.Self, event.Issue.Key),
-		Color:  "good",
+		Color:  event.getPriorityColor(),
 		Fields: fields,
 	}
 
@@ -155,7 +155,7 @@ func (s *slackService) IssueDeleted(event JIRAWebevent) error {
 			event.Issue.Self, event.Issue.Key),
 		Pretext: fmt.Sprintf("%s Commented on <%s|%s>", event.User.DisplayName,
 			event.Issue.Self, event.Issue.Key),
-		Color:  "good",
+		Color:  event.getPriorityColor(),
 		Fields: fields,
 	}
 
@@ -189,7 +189,7 @@ func (s *slackService) WorklogUpdated(event JIRAWebevent) error {
 			event.Issue.Self, event.Issue.Key),
 		Pretext: fmt.Sprintf("%s Commented on <%s|%s>", event.User.DisplayName,
 			event.Issue.Self, event.Issue.Key),
-		Color:  "good",
+		Color:  event.getPriorityColor(),
 		Fields: fields,
 	}
 
@@ -200,4 +200,27 @@ func (s *slackService) WorklogUpdated(event JIRAWebevent) error {
 	payload.Text = ""
 	payload.Attachments = []Attachment{attachment}
 	return payload.sendEvent(s.config_)
+}
+
+func (e *JIRAWebevent) getPriorityColor() string {
+
+	id := e.Issue.Fields.Priority.Id
+	switch {
+	case id == "1": // Blocker
+		return "#990000"
+	case id == "2":
+		return "#cc0000" // Critical
+	case id == "3":
+		return "#ff0000"
+	case id == "6": // Normal
+		return "#339933"
+	case id == "4": // Minor
+		return "#006600"
+	case id == "5": // Trivial
+		return "#003300"
+	case id == "10000": // Holding
+		return "#000000"
+	default:
+		return "good"
+	}
 }

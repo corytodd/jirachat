@@ -86,6 +86,7 @@ type JIRAIssueAssignee struct {
 
 type JIRAIssuePriority struct {
 	Name string `json:"name"`
+	Id   string `json:"id"`
 }
 
 type JIRAIssueStatus struct {
