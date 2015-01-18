@@ -7,8 +7,10 @@ This work is mostly taken from https://github.com/tbruyelle/hipchat-go for the H
 The Slack integration is adapted from https://github.com/daikikohara/enotify-slack
 
 
-There is are a ton of things that could be done to improve this so feel free to contribute.
+There are a ton of things that could be done to improve this so feel free to contribute.
 
+
+How to work with the Slack service
 ```
 // Slack Sample Handler
 func SendSlack(w http.ResponseWriter, r *http.Request) {
@@ -53,7 +55,10 @@ func SendSlack(w http.ResponseWriter, r *http.Request) {
 	// All went well!
 	w.WriteHeader(http.StatusOK)
 }
+```
 
+How to work with the Hipchat service
+```
 // Sample Hipchat Handler
 func SendHipchat(w http.ResponseWriter, r *http.Request) {
 	c := appengine.NewContext(r)
