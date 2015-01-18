@@ -106,12 +106,12 @@ func (s *slackService) IssueCreated(event JIRAWebevent) error {
 		},
 		Field{
 			Title: "Assignee",
-			Value: event.Issue.Fields.Assignee,
+			Value: event.Issue.Fields.Assignee.DisplayName,
 			Short: true,
 		},
 		Field{
 			Title: "Priority",
-			Value: event.Issue.Fields.Priority,
+			Value: event.Issue.Fields.Priority.Name,
 			Short: true,
 		},
 	}
