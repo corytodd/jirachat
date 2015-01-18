@@ -64,11 +64,32 @@ type JIRAComment struct {
 }
 
 type IssueFieldData struct {
-	Summary     string `json:"summary"`
-	Created     string `json:"created"`
-	Description string `json:"description"`
-	Priority    string `json:"priority"`
-	Assignee    string `json:"assignee"`
+	Summary     string            `json:"summary"`
+	Created     string            `json:"created"`
+	Description string            `json:"description"`
+	Priority    JIRAIssuePriority `json:"priority"`
+	Assignee    JIRAIssueAssignee `json:"assignee"`
+	Labels      []string          `json:"labels"`
+	Status      JIRAIssueStatus   `json:"status"`
+}
+
+type JIRAIssueAssignee struct {
+	Self        string            `json:"self"`
+	Name        string            `json:"name"`
+	Key         string            `json:"key"`
+	Email       string            `json:"emailAddress"`
+	AvatarUrls  map[string]string `json:"avatarUrls"`
+	DisplayName string            `json:"displayName"`
+	Active      bool              `json:"active"`
+	timeZone    string            `json:"timeZone"`
+}
+
+type JIRAIssuePriority struct {
+	Name string `json:"name"`
+}
+
+type JIRAIssueStatus struct {
+	Name string `json:"name"`
 }
 
 // For the avatars, use getter methods because the names start with numbers
