@@ -34,7 +34,7 @@ type JIRAUser struct {
 	EmailAddress string            `json:"emailAddress"`
 	AvatarUrls   map[string]string `json:"avatarUrls"`
 	DisplayName  string            `json:"displayName"`
-	Active       string            `json:"active"`
+	Active       bool              `json:"active"`
 }
 
 // Some of the ChangeLogItems may through unmarshal errors but they don't seem
