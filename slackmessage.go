@@ -110,30 +110,30 @@ func (s *slackService) IssueUpdated(event JIRAWebevent) error {
 					Short: false,
 				},
 			}
-		//case event.Changelog.Items[0].Field == "assignee":
-		//	title = fmt.Sprintf("%s changed assigne of %s", user,
-		//		event.getIssueLink(s.config_))
+		case event.Changelog.Items[0].Field == "assignee":
+			title = fmt.Sprintf("%s changed assigne of %s", user,
+				event.getIssueLink(s.config_))
 
-		//	from := "unassigned"
-		//	if len(event.Changelog.Items[0].FromString) > 0 {
-		//		from = event.Changelog.Items[0].FromString
-		//	}
-		//	to := "unassigned"
-		//	if len(event.Changelog.Items[0].ToString) > 0 {
-		//		to = event.Changelog.Items[0].ToString
-		//	}
-		//	fields = []Field{
-		//		Field{
-		//			Title: "From",
-		//			Value: from,
-		//			Short: false,
-		//		},
-		//		Field{
-		//			Title: "To",
-		//			Value: to,
-		//			Short: false,
-		//		},
-		//	}
+			from := "unassigned"
+			if len(event.Changelog.Items[0].FromString) > 0 {
+				from = event.Changelog.Items[0].FromString
+			}
+			to := "unassigned"
+			if len(event.Changelog.Items[0].ToString) > 0 {
+				to = event.Changelog.Items[0].ToString
+			}
+			fields = []Field{
+				Field{
+					Title: "From",
+					Value: from,
+					Short: false,
+				},
+				Field{
+					Title: "To",
+					Value: to,
+					Short: false,
+				},
+			}
 		default:
 			// Post a generic event and post the details to the error channel
 			title = fmt.Sprintf("%s modified %s", event.User.DisplayName,
