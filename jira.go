@@ -41,7 +41,7 @@ type JIRAUser struct {
 // to cause any major issues
 type JIRAChangelog struct {
 	Items []ChangleLogItems `json:"items,omitempty"`
-	Id    int               `json:"id,omitempty"`
+	Id    string            `json:"id,omitempty"`
 }
 
 type ChangleLogItems struct {
@@ -71,6 +71,7 @@ type IssueFieldData struct {
 	Assignee    JIRAIssueAssignee `json:"assignee"`
 	Labels      []string          `json:"labels"`
 	Status      JIRAIssueStatus   `json:"status"`
+	Comment     InnerComment      `json:"comment"`
 }
 
 type JIRAIssueAssignee struct {
@@ -91,6 +92,13 @@ type JIRAIssuePriority struct {
 
 type JIRAIssueStatus struct {
 	Name string `json:"name"`
+}
+
+type InnerComment struct {
+	StartAt    int           `json"startAt"`
+	MaxResults int           `json:"maxResults"`
+	Total      int           `json:"total"`
+	Comments   []JIRAComment `json:"comments"`
 }
 
 // For the avatars, use getter methods because the names start with numbers

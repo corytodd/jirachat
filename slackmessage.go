@@ -1,7 +1,14 @@
 package jirachat
 
 import (
+	"errors"
 	"fmt"
+	"strconv"
+)
+
+const (
+	issueLinkBase = "https://%s.atlassian.net/browse/%s"
+	userLinkBase  = "https://%s.atlassian.net/secure/ViewProfile.jspa?name=%s"
 )
 
 // Payload represents a payload sent to Slack.
@@ -61,29 +68,93 @@ type Field struct {
 	Short bool `json:"short"`
 }
 
-// ConstructSlackMessage for issue_updated type
+// ConstructSlackMessage for issue_updated type. Unfortunately this includes
+// everything that isn't worklog or ticket create/delete
 func (s *slackService) IssueUpdated(event JIRAWebevent) error {
+
 	payload := Payload{}
-	fields := []Field{
-		Field{
-			Title: "Issue",
-			Value: event.Issue.Fields.Summary,
-			Short: false,
-		},
-		Field{
-			Title: "Comment",
-			Value: event.Comment.Body,
-			Short: false,
-		},
+	var fields []Field
+	title := ""
+	user := event.getUserLink(s.config_)
+	// Try to determine what kind of event this was
+	switch {
+	case len(event.Comment.Id) > 0:
+		title = fmt.Sprintf("%s created %s", user,
+			event.getIssueLink(s.config_))
+		fields = []Field{
+			Field{
+				Title: "Issue",
+				Value: event.Issue.Fields.Summary,
+				Short: false,
+			},
+			Field{
+				Title: "Comment",
+				Value: event.Comment.Body,
+				Short: false,
+			},
+		}
+	case len(event.Changelog.Items) > 0:
+		switch {
+		case event.Changelog.Items[0].Field == "status":
+			title = fmt.Sprintf("%s changed status of %s", user,
+				event.getIssueLink(s.config_))
+			fields = []Field{
+				Field{
+					Title: "From",
+					Value: event.Changelog.Items[0].FromString,
+					Short: false,
+				},
+				Field{
+					Title: "To",
+					Value: event.Changelog.Items[0].ToString,
+					Short: false,
+				},
+			}
+		//case event.Changelog.Items[0].Field == "assignee":
+		//	title = fmt.Sprintf("%s changed assigne of %s", user,
+		//		event.getIssueLink(s.config_))
+
+		//	from := "unassigned"
+		//	if len(event.Changelog.Items[0].FromString) > 0 {
+		//		from = event.Changelog.Items[0].FromString
+		//	}
+		//	to := "unassigned"
+		//	if len(event.Changelog.Items[0].ToString) > 0 {
+		//		to = event.Changelog.Items[0].ToString
+		//	}
+		//	fields = []Field{
+		//		Field{
+		//			Title: "From",
+		//			Value: from,
+		//			Short: false,
+		//		},
+		//		Field{
+		//			Title: "To",
+		//			Value: to,
+		//			Short: false,
+		//		},
+		//	}
+		default:
+			// Post a generic event and post the details to the error channel
+			title = fmt.Sprintf("%s modified %s", event.User.DisplayName,
+				event.getIssueLink(s.config_))
+			resp := &Response{"Erroring Event": event}
+			constructSlackError(resp.String(), s.config_)
+
+		}
+	default:
+		// Post a generic event and post the details to the error channel
+		title = fmt.Sprintf("%s modified %s", event.User.DisplayName,
+			event.getIssueLink(s.config_))
+		resp := &Response{"Erroring Event": event}
+		constructSlackError(resp.String(), s.config_)
 	}
 
 	attachment := Attachment{
-		Fallback: fmt.Sprintf("%s Commented on <%s|%s>", event.User.DisplayName,
-			event.Issue.Self, event.Issue.Key),
-		Pretext: fmt.Sprintf("%s Commented on <%s|%s>", event.User.DisplayName,
-			event.Issue.Self, event.Issue.Key),
-		Color:  event.getPriorityColor(),
-		Fields: fields,
+		Fallback: title,
+		Pretext:  title,
+		Color:    event.getPriorityColor(),
+		Fields:   fields,
 	}
 
 	payload.Channel = s.config_.Channel
@@ -115,14 +186,13 @@ func (s *slackService) IssueCreated(event JIRAWebevent) error {
 			Short: true,
 		},
 	}
-
+	title := fmt.Sprintf("%s created %s", event.getUserLink(s.config_),
+		event.getIssueLink(s.config_))
 	attachment := Attachment{
-		Fallback: fmt.Sprintf("%s Created on <%s|%s>", event.User.DisplayName,
-			event.Issue.Self, event.Issue.Key),
-		Pretext: fmt.Sprintf("%s Created on <%s|%s>", event.User.DisplayName,
-			event.Issue.Self, event.Issue.Key),
-		Color:  event.getPriorityColor(),
-		Fields: fields,
+		Fallback: title,
+		Pretext:  title,
+		Color:    event.getPriorityColor(),
+		Fields:   fields,
 	}
 
 	payload.Channel = s.config_.Channel
@@ -137,6 +207,12 @@ func (s *slackService) IssueCreated(event JIRAWebevent) error {
 // ConstructSlackMessage for issue_deleted type
 func (s *slackService) IssueDeleted(event JIRAWebevent) error {
 	payload := Payload{}
+	body := "None"
+	last := event.Issue.Fields.Comment.Total
+	if last > 0 {
+		body = event.Issue.Fields.Comment.Comments[last-1].Body
+	}
+
 	fields := []Field{
 		Field{
 			Title: "Issue",
@@ -144,19 +220,19 @@ func (s *slackService) IssueDeleted(event JIRAWebevent) error {
 			Short: false,
 		},
 		Field{
-			Title: "Comment",
-			Value: event.Comment.Body,
+			Title: "Last Comment",
+			Value: body,
 			Short: false,
 		},
 	}
 
+	// Don't bother linking to the issue!
+	title := fmt.Sprintf("%s deleted %s", event.getUserLink(s.config_),
+		event.Issue.Key)
 	attachment := Attachment{
-		Fallback: fmt.Sprintf("%s Commented on <%s|%s>", event.User.DisplayName,
-			event.Issue.Self, event.Issue.Key),
-		Pretext: fmt.Sprintf("%s Commented on <%s|%s>", event.User.DisplayName,
-			event.Issue.Self, event.Issue.Key),
-		Color:  event.getPriorityColor(),
-		Fields: fields,
+		Fallback: title,
+		Pretext:  title,
+		Fields:   fields,
 	}
 
 	payload.Channel = s.config_.Channel
@@ -168,29 +244,47 @@ func (s *slackService) IssueDeleted(event JIRAWebevent) error {
 	return payload.sendEvent(s.config_)
 }
 
-// ConstructSlackMessage for worklog updates
+// ConstructSlackMessage for issue_deleted type
 func (s *slackService) WorklogUpdated(event JIRAWebevent) error {
 	payload := Payload{}
+
+	timestr := ""
+	for i := range event.Changelog.Items {
+		if event.Changelog.Items[i].Field == "timespent" {
+			timestr = event.Changelog.Items[i].ToString
+		}
+	}
+	if len(timestr) == 0 {
+		return errors.New("Unable to read timespent field")
+	}
+
+	time, err := strconv.Atoi(timestr)
+	if err != nil {
+		return errors.New(fmt.Sprintf("Invalid timespent field %s", timestr))
+	}
+	time /= 60
+
+	if time == 1 {
+		timestr = strconv.Itoa(time) + " minute"
+	} else {
+		timestr = strconv.Itoa(time) + " minutes"
+	}
+
 	fields := []Field{
 		Field{
-			Title: "Issue",
-			Value: event.Issue.Fields.Summary,
-			Short: false,
-		},
-		Field{
-			Title: "Comment",
-			Value: event.Comment.Body,
+			Title: "Total Work",
+			Value: timestr,
 			Short: false,
 		},
 	}
 
+	title := fmt.Sprintf("%s updated work log %s", event.getUserLink(s.config_),
+		event.getIssueLink(s.config_))
 	attachment := Attachment{
-		Fallback: fmt.Sprintf("%s Commented on <%s|%s>", event.User.DisplayName,
-			event.Issue.Self, event.Issue.Key),
-		Pretext: fmt.Sprintf("%s Commented on <%s|%s>", event.User.DisplayName,
-			event.Issue.Self, event.Issue.Key),
-		Color:  event.getPriorityColor(),
-		Fields: fields,
+		Fallback: title,
+		Pretext:  title,
+		Color:    event.getPriorityColor(),
+		Fields:   fields,
 	}
 
 	payload.Channel = s.config_.Channel
@@ -200,6 +294,18 @@ func (s *slackService) WorklogUpdated(event JIRAWebevent) error {
 	payload.Text = ""
 	payload.Attachments = []Attachment{attachment}
 	return payload.sendEvent(s.config_)
+}
+
+// Returns a markdown formatted issue link with the issue key
+// as the link text
+func (e *JIRAWebevent) getIssueLink(s *SlackConfig) string {
+	link := fmt.Sprintf(issueLinkBase, s.Domain, e.Issue.Key)
+	return fmt.Sprintf("<%s|%s>", link, e.Issue.Key)
+}
+
+func (e *JIRAWebevent) getUserLink(s *SlackConfig) string {
+	link := fmt.Sprintf(userLinkBase, s.Domain, e.User.Name)
+	return fmt.Sprintf("<%s|%s>", link, e.User.DisplayName)
 }
 
 func (e *JIRAWebevent) getPriorityColor() string {
