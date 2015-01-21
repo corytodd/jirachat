@@ -23,6 +23,7 @@ type SlackConfig struct {
 	BotName    string
 	Emoji      string
 	WebhookUrl string
+	Domain     string
 	client_    http.Client
 }
 
@@ -44,7 +45,7 @@ func (p *Payload) sendEvent(config *SlackConfig) error {
 	resp, err := config.client_.Post(config.WebhookUrl, "application/json",
 		strings.NewReader(string(data)))
 	if err != nil {
-		constructSlackError(fmt.Sprintf("%v", err), config.ErrChan)
+		constructSlackError(fmt.Sprintf("%v", err), config)
 		return err
 	}
 	defer resp.Body.Close()
@@ -57,7 +58,7 @@ func (p *Payload) sendEvent(config *SlackConfig) error {
 }
 
 // ConstructSlackError constructs an error message sent to Slack.
-func constructSlackError(msg, channel string) *Payload {
+func constructSlackError(msg string, config *SlackConfig) {
 	fields := []Field{
 		Field{
 			Title: "Detail",
@@ -73,12 +74,13 @@ func constructSlackError(msg, channel string) *Payload {
 	}
 
 	payload := Payload{}
-	payload.Channel = channel
-	payload.Username = "notify-error"
+	payload.Username = "Derp Bot"
 	payload.Icon_emoji = ":persevere:"
 	payload.Unfurl_links = true
 	payload.Attachments = []Attachment{attachment}
 	payload.Text = ""
 
-	return &payload
+	data, _ := json.Marshal(payload)
+	config.client_.Post(config.ErrChan, "application/json",
+		strings.NewReader(string(data)))
 }

@@ -1,6 +1,8 @@
 package jirachat
 
-const VERSION = "1.0"
+import "encoding/json"
+
+const VERSION = "1.1"
 
 // Hipchat specific
 const (
@@ -21,3 +23,16 @@ const (
 const (
 	PARSE_FULL = "full"
 )
+
+//Convenience interface for printing anonymous JSON objects
+type Response map[string]interface{}
+
+func (r Response) String() (s string) {
+	b, err := json.Marshal(r)
+	if err != nil {
+		s = ""
+		return
+	}
+	s = string(b)
+	return
+}
