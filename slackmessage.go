@@ -79,7 +79,7 @@ func (s *slackService) IssueUpdated(event JIRAWebevent) error {
 	// Try to determine what kind of event this was
 	switch {
 	case len(event.Comment.Id) > 0:
-		title = fmt.Sprintf("%s created %s", user,
+		title = fmt.Sprintf("%s commented on %s", user,
 			event.getIssueLink(s.config_))
 		fields = []Field{
 			Field{
@@ -140,6 +140,7 @@ func (s *slackService) IssueUpdated(event JIRAWebevent) error {
 				event.getIssueLink(s.config_))
 			resp := &Response{"Erroring Event": event}
 			constructSlackError(resp.String(), s.config_)
+			return nil
 
 		}
 	default:
@@ -148,6 +149,7 @@ func (s *slackService) IssueUpdated(event JIRAWebevent) error {
 			event.getIssueLink(s.config_))
 		resp := &Response{"Erroring Event": event}
 		constructSlackError(resp.String(), s.config_)
+		return nil
 	}
 
 	attachment := Attachment{
