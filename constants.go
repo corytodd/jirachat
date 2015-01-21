@@ -2,7 +2,7 @@ package jirachat
 
 import "encoding/json"
 
-const VERSION = "1.2"
+const VERSION = "1.3"
 
 // Hipchat specific
 const (
