@@ -5,9 +5,10 @@
 package jirachat
 
 import (
+	"net/http"
+
 	"appengine"
 	"appengine/urlfetch"
-	"net/http"
 )
 
 //In the appengine context, return an http.Client with an appengine context
