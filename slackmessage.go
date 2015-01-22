@@ -9,6 +9,7 @@ import (
 const (
 	issueLinkBase = "https://%s.atlassian.net/browse/%s"
 	userLinkBase  = "https://%s.atlassian.net/secure/ViewProfile.jspa?name=%s"
+	ErrSlackParse = "Unknown Event Failed Slack Parsing"
 )
 
 // Payload represents a payload sent to Slack.
@@ -140,7 +141,7 @@ func (s *slackService) IssueUpdated(event JIRAWebevent) error {
 				event.getIssueLink(s.config_))
 			resp := &Response{"Erroring Event": event}
 			constructSlackError(resp.String(), s.config_)
-			return nil
+			return errors.New(ErrSlackParse)
 
 		}
 	default:
@@ -149,7 +150,7 @@ func (s *slackService) IssueUpdated(event JIRAWebevent) error {
 			event.getIssueLink(s.config_))
 		resp := &Response{"Erroring Event": event}
 		constructSlackError(resp.String(), s.config_)
-		return nil
+		return errors.New(ErrSlackParse)
 	}
 
 	attachment := Attachment{
