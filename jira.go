@@ -72,6 +72,9 @@ type IssueFieldData struct {
 	Labels      []string          `json:"labels"`
 	Status      JIRAIssueStatus   `json:"status"`
 	Comment     InnerComment      `json:"comment"`
+	IssueType   JIRAIssueType     `json:"issuetype"`
+	Project     JIRAIssueProject  `json:"project"`
+	CF_10101    []JIRAUser        `json:"customfield_10101"` // Approved By ECN
 }
 
 type JIRAIssueAssignee struct {
@@ -92,6 +95,22 @@ type JIRAIssuePriority struct {
 
 type JIRAIssueStatus struct {
 	Name string `json:"name"`
+}
+
+type JIRAIssueType struct {
+	Self        string `json:"self"`
+	Id          string `json:"id"`
+	Description string `json:"description"`
+	IconURL     string `json:"iconUrl"`
+	Name        string `json:"name"`
+	subtask     bool   `json:"subtask"`
+}
+
+type JIRAIssueProject struct {
+	Self string `json:"self"`
+	Id   string `json:"id"`
+	Name string `json:"name"`
+	Key  string `json:"key"`
 }
 
 type InnerComment struct {
