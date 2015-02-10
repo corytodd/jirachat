@@ -8,30 +8,31 @@ import (
 	"strings"
 )
 
-type EndPoint int
-
-const (
-	chatPostMessage EndPoint = iota
-	base
-	webHook
-)
-
 type SlackConfig struct {
-	ErrChan    string
-	Channel    string
-	Token      string
-	BotName    string
-	Emoji      string
+	// Optional channel to post error reports to
+	ErrChan string
+
+	// Receiver channel for JIRA events
+	Channel string
+
+	// Bot name reported to Slack
+	BotName string
+
+	// Simple Slack Webhook URI
 	WebhookUrl string
-	Domain     string
-	client_    http.Client
+
+	// JIRA domain name
+	Domain string
+
+	client_ http.Client
 }
 
 type slackService struct {
 	config_ *SlackConfig
 }
 
-// Create a new slack with the given config
+// Create a new slack service with the given config. A Slack service
+// provides default JIRAWebEvent parser and notification functions.
 func NewSlackService(r *http.Request, config *SlackConfig) *slackService {
 	client := getHttpClient(r)
 	config.client_ = client
@@ -40,7 +41,7 @@ func NewSlackService(r *http.Request, config *SlackConfig) *slackService {
 }
 
 // sendEvent sends Payload which contains JIRA data to Slack.
-func (p *Payload) sendEvent(config *SlackConfig) error {
+func (p *payload) sendEvent(config *SlackConfig) error {
 	data, err := json.Marshal(p)
 	resp, err := config.client_.Post(config.WebhookUrl, "application/json",
 		strings.NewReader(string(data)))
@@ -73,7 +74,7 @@ func constructSlackError(msg string, config *SlackConfig) {
 		Fields:   fields,
 	}
 
-	payload := Payload{}
+	payload := payload{}
 	payload.Username = "Derp Bot"
 	payload.Icon_emoji = ":persevere:"
 	payload.Unfurl_links = true

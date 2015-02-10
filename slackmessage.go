@@ -9,13 +9,14 @@ import (
 const (
 	issueLinkBase = "https://%s.atlassian.net/browse/%s"
 	userLinkBase  = "https://%s.atlassian.net/secure/ViewProfile.jspa?name=%s"
-	ErrSlackParse = "Unknown Event Failed Slack Parsing"
 )
+
+var ErrSlackParse = errors.New("Unknown Event Failed Slack Parsing")
 
 // Payload represents a payload sent to Slack.
 // The values are sent to Slack via incoming-webhook.
 // See - https://my.slack.com/services/new/incoming-webhook
-type Payload struct {
+type payload struct {
 	Channel      string       `json:"channel"`
 	Username     string       `json:"username"`
 	Text         string       `json:"text"`
@@ -73,7 +74,7 @@ type Field struct {
 // everything that isn't worklog or ticket create/delete
 func (s *slackService) IssueUpdated(event JIRAWebevent) error {
 
-	payload := Payload{}
+	payload := payload{}
 	var fields []Field
 	title := ""
 	user := event.getUserLink(s.config_)
@@ -141,7 +142,7 @@ func (s *slackService) IssueUpdated(event JIRAWebevent) error {
 				event.getIssueLink(s.config_))
 			resp := &Response{"Erroring Event": event}
 			constructSlackError(resp.String(), s.config_)
-			return errors.New(ErrSlackParse)
+			return ErrSlackParse
 
 		}
 	default:
@@ -150,7 +151,7 @@ func (s *slackService) IssueUpdated(event JIRAWebevent) error {
 			event.getIssueLink(s.config_))
 		resp := &Response{"Erroring Event": event}
 		constructSlackError(resp.String(), s.config_)
-		return errors.New(ErrSlackParse)
+		return ErrSlackParse
 	}
 
 	attachment := Attachment{
@@ -169,9 +170,9 @@ func (s *slackService) IssueUpdated(event JIRAWebevent) error {
 	return payload.sendEvent(s.config_)
 }
 
-// ConstructSlackMessage for issue_created type
+// Construct SlackMessage for issue_created type
 func (s *slackService) IssueCreated(event JIRAWebevent) error {
-	payload := Payload{}
+	payload := payload{}
 	fields := []Field{
 		Field{
 			Title: "Summary",
@@ -207,9 +208,9 @@ func (s *slackService) IssueCreated(event JIRAWebevent) error {
 	return payload.sendEvent(s.config_)
 }
 
-// ConstructSlackMessage for issue_deleted type
+// Construct SlackMessage for issue_deleted type
 func (s *slackService) IssueDeleted(event JIRAWebevent) error {
-	payload := Payload{}
+	payload := payload{}
 	body := "None"
 	last := event.Issue.Fields.Comment.Total
 	if last > 0 {
@@ -247,9 +248,9 @@ func (s *slackService) IssueDeleted(event JIRAWebevent) error {
 	return payload.sendEvent(s.config_)
 }
 
-// ConstructSlackMessage for issue_deleted type
+// Construct SlackMessage for issue_deleted type
 func (s *slackService) WorklogUpdated(event JIRAWebevent) error {
-	payload := Payload{}
+	payload := payload{}
 
 	timestr := ""
 	for i := range event.Changelog.Items {
@@ -306,11 +307,14 @@ func (e *JIRAWebevent) getIssueLink(s *SlackConfig) string {
 	return fmt.Sprintf("<%s|%s>", link, e.Issue.Key)
 }
 
+// Returns a markdown formatted user link with the user name
+// as the link text
 func (e *JIRAWebevent) getUserLink(s *SlackConfig) string {
 	link := fmt.Sprintf(userLinkBase, s.Domain, e.User.Name)
 	return fmt.Sprintf("<%s|%s>", link, e.User.DisplayName)
 }
 
+// Convert priority id to hex color string
 func (e *JIRAWebevent) getPriorityColor() string {
 
 	id := e.Issue.Fields.Priority.Id
