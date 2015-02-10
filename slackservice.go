@@ -8,6 +8,16 @@ import (
 	"strings"
 )
 
+// Slacker is the interface implmented by objects that can parse their
+// own webevents
+type Slacker interface {
+	IssueCreated(*JIRAWebevent) error
+	IssueDeleted(JIRAWebevent) error
+	IssueUpdated(JIRAWebevent) error
+	WorklogUpdated(JIRAWebevent) error
+	SendErrorNotice(string, *SlackConfig)
+}
+
 type SlackConfig struct {
 	// Optional channel to post error reports to
 	ErrChan string
@@ -27,26 +37,25 @@ type SlackConfig struct {
 	client_ http.Client
 }
 
-type slackService struct {
-	config_ *SlackConfig
+type SlackService struct {
+	Config *SlackConfig
 }
 
 // Create a new slack service with the given config. A Slack service
 // provides default JIRAWebEvent parser and notification functions.
-func NewSlackService(r *http.Request, config *SlackConfig) *slackService {
-	client := getHttpClient(r)
-	config.client_ = client
-	svc := &slackService{config_: config}
+func NewSlackService(r *http.Request, config *SlackConfig) *SlackService {
+	config.client_ = getHttpClient(r)
+	svc := &SlackService{Config: config}
 	return svc
 }
 
-// sendEvent sends Payload which contains JIRA data to Slack.
-func (p *payload) sendEvent(config *SlackConfig) error {
+// SendEvent sends SlackMessage which contains JIRA data to Slack.
+func (p *SlackMessage) SendEvent(config *SlackConfig) error {
 	data, err := json.Marshal(p)
 	resp, err := config.client_.Post(config.WebhookUrl, "application/json",
 		strings.NewReader(string(data)))
 	if err != nil {
-		constructSlackError(fmt.Sprintf("%v", err), config)
+		SendErrorNotice(fmt.Sprintf("%v", err), config)
 		return err
 	}
 	defer resp.Body.Close()
@@ -59,7 +68,7 @@ func (p *payload) sendEvent(config *SlackConfig) error {
 }
 
 // ConstructSlackError constructs an error message sent to Slack.
-func constructSlackError(msg string, config *SlackConfig) {
+func SendErrorNotice(msg string, config *SlackConfig) {
 	fields := []Field{
 		Field{
 			Title: "Detail",
@@ -74,7 +83,7 @@ func constructSlackError(msg string, config *SlackConfig) {
 		Fields:   fields,
 	}
 
-	payload := payload{}
+	payload := SlackMessage{}
 	payload.Username = "Derp Bot"
 	payload.Icon_emoji = ":persevere:"
 	payload.Unfurl_links = true

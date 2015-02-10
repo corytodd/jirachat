@@ -9,7 +9,7 @@ The Slack integration is adapted from https://github.com/daikikohara/enotify-sla
 
 There are a ton of things that could be done to improve this so feel free to contribute.
 
-If you are using this and I break something, feel free to yell :)
+If you are using this and I break something, feel free to yell :). 
 
 How to work with the Slack service
 ```
@@ -33,19 +33,8 @@ func SendSlack(w http.ResponseWriter, r *http.Request) {
 		//return
 	}
 
-	switch event.WebhookEvent {
-	case "jira:issue_created":
-		err = svc.IssueCreated(event)
-	case "jira:issue_deleted":
-		err = svc.IssueDeleted(event)
-	case "jira:issue_updated":
-		err = svc.IssueUpdated(event)
-	case "jira:worklog_updated":
-		err = svc.WorklogUpdated(event)
-
-	default:
-		err = fmt.Errorf("Unknown JIRA Event type %s", event.WebhookEvent)
-	}
+	mySvc := &MySlacker{config: svc.Config}
+	err = mySvc.IssueCreated(&event)
 
 	if err != nil {
 		c.Errorf("Slack Error %v", err)
@@ -56,6 +45,59 @@ func SendSlack(w http.ResponseWriter, r *http.Request) {
 	// All went well!
 	w.WriteHeader(http.StatusOK)
 }
+
+type MySlacker struct {
+	config *jirachat.SlackConfig
+}
+
+func (s *MySlacker) IssueCreated(event *jirachat.JIRAWebevent) error {
+	payload := jirachat.SlackMessage{}
+	fields := []jirachat.Field{
+		jirachat.Field{
+			Title: "Summary",
+			Value: event.Issue.Fields.Summary,
+			Short: false,
+		},
+	}
+	title := fmt.Sprintf("%s created %s", event.GetUserLink(s.config),
+		event.GetIssueLink(s.config))
+	attachment := jirachat.Attachment{
+		Fallback: title,
+		Pretext:  title,
+		Color:    getPriorityColor(event.Issue.Fields.Priority.Id),
+		Fields:   fields,
+	}
+
+	payload.Channel = s.config.Channel
+	payload.Username = s.config.BotName
+	payload.Icon_url = event.User.LargeAvatar()
+	payload.Unfurl_links = true
+	payload.Text = ""
+	payload.Attachments = []jirachat.Attachment{attachment}
+	return payload.SendEvent(s.config)
+}
+func getPriorityColor(id string) string {
+
+	switch {
+	case id == "1": 		// Blocker
+		return "#990000"
+	case id == "2":
+		return "#cc0000" 	// Critical
+	case id == "3":
+		return "#ff0000"
+	case id == "6": 		// Normal
+		return "#339933"
+	case id == "4": 		// Minor
+		return "#006600"
+	case id == "5": 		// Trivial
+		return "#003300"
+	case id == "10000": 	// Holding
+		return "#000000"
+	default:
+		return jriachat.ColorGood
+	}
+}
+
 ```
 
 How to work with the Hipchat service
