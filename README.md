@@ -9,7 +9,7 @@ The Slack integration is adapted from https://github.com/daikikohara/enotify-sla
 
 There are a ton of things that could be done to improve this so feel free to contribute.
 
-If you are using this and I break something, feel free to yell :)
+If you are using this and I break something, feel free to yell :). 
 
 How to work with the Slack service
 ```
