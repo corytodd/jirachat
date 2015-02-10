@@ -16,6 +16,7 @@ const (
 
 const (
 	PARSE_FULL = "full"
+	ColorGood  = "good"
 )
 
 // Slack constants.
