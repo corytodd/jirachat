@@ -1,10 +1,5 @@
 package jirachat
 
-import "encoding/json"
-
-const VERSION = "1.4"
-
-// Hipchat specific
 const (
 	ColorYellow = "yellow"
 	ColorRed    = "red"
@@ -12,27 +7,16 @@ const (
 	ColorPurple = "purple"
 	ColorGray   = "gray"
 	ColorRandom = "random"
-
-	FormatText = "text"
-	FormatHTML = "html"
-
-	ResponseStatusSent = "sent"
+	FormatText  = "text"
+	FormatHTML  = "html"
 )
 
-// Slack specific
+// Hipchat constants.
+// Hipchat accepts string names for message colors
+
 const (
 	PARSE_FULL = "full"
 )
 
-//Convenience interface for printing anonymous JSON objects
-type Response map[string]interface{}
-
-func (r Response) String() (s string) {
-	b, err := json.Marshal(r)
-	if err != nil {
-		s = ""
-		return
-	}
-	s = string(b)
-	return
-}
+// Slack constants.
+// Slack uses strings to control the formating of some fields

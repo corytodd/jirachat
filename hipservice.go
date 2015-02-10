@@ -17,6 +17,7 @@ const (
 
 // Config manages service resources
 type HipConfig struct {
+	// Hipchat access token
 	Token    string
 	baseURL_ *url.URL
 	client_  *http.Client

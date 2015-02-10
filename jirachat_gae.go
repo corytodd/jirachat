@@ -1,4 +1,5 @@
-// Package hipchat provides a client library for the Hipchat REST API.
+// Package jirachat provides a client library for running an App Engine
+// JIRA webhook forwarding service. Supported targets include Hipchat and Slack.
 
 // +build appengine
 
