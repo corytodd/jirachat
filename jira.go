@@ -6,10 +6,11 @@ import (
 	"net/http"
 )
 
+// The standard JIRA icon
 const jira_img = "https://dujrsrsgsd3nh.cloudfront.net/img/emoticons/jira-1350074257.png"
 
 // This is a json response for a JIRA webhook (more or less) according to
-//https://developer.atlassian.com/display/JIRADEV/JIRA+Webhooks+Overview
+// https://developer.atlassian.com/jiradev/jira-architecture/webhooks
 type JIRAWebevent struct {
 	// Internal ID of the event
 	Id int `json:"id,omitempty"`
@@ -23,6 +24,8 @@ type JIRAWebevent struct {
 	// User who triggered event
 	User JIRAUser `json:"user"`
 
+	// An array of change items, with one entry for each field that has
+	// been changed. The changelog is only provided for the issue_updated event.
 	Changelog JIRAChangelog `json:"changelog"`
 
 	// Set if this event is a jira_updated event and a comment was made
@@ -32,6 +35,9 @@ type JIRAWebevent struct {
 	WebhookEvent string `json:"webhookEvent"`
 }
 
+// Decribes the JIRAIssue object defined in the JIRA 5.1 REST docs
+//
+// https://docs.atlassian.com/jira/REST/5.1/#id204637
 type JIRAIssue struct {
 	Expand string `json:"expand"`
 
@@ -48,6 +54,9 @@ type JIRAIssue struct {
 	Fields IssueFieldData `json:"fields"`
 }
 
+// Describes the JIRAUser object defined in the JIRA 5.1 REST docs
+//
+// https://docs.atlassian.com/jira/REST/5.1/#id202197
 type JIRAUser struct {
 	Self string `json:"self"`
 
@@ -77,6 +86,9 @@ type ChangleLogItems struct {
 	Field      string `json:"field"`
 }
 
+// Describes the JIRAComment object defined in the JIRA 5.1 REST docs
+//
+// https://docs.atlassian.com/jira/REST/5.1/#id204337
 type JIRAComment struct {
 	Self         string   `json:"self"`
 	Id           string   `json:"id"`

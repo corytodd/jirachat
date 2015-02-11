@@ -8,8 +8,8 @@ import (
 	"strings"
 )
 
-// Slacker is the interface implmented by objects that can parse their
-// own webevents
+// Slacker is the interface implmented by types that can parse their
+// own webevents.
 type Slacker interface {
 	IssueCreated(*JIRAWebevent) error
 	IssueDeleted(JIRAWebevent) error
@@ -18,6 +18,8 @@ type Slacker interface {
 	SendErrorNotice(string, *SlackConfig)
 }
 
+// Configuration used by SlackService to communicate with your Slack
+// instance.
 type SlackConfig struct {
 	// Optional channel to post error reports to
 	ErrChan string
@@ -37,6 +39,7 @@ type SlackConfig struct {
 	client_ http.Client
 }
 
+// SlackService handles HTTP communication with Slack Chat
 type SlackService struct {
 	Config *SlackConfig
 }

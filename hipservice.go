@@ -11,6 +11,9 @@ import (
 	"net/url"
 )
 
+// Base API URL
+//
+// https://www.hipchat.com/docs/apiv2
 const (
 	defaultBaseURL = "https://api.hipchat.com/v2/"
 )
