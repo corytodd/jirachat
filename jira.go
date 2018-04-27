@@ -6,9 +6,6 @@ import (
 	"net/http"
 )
 
-// The standard JIRA icon
-const jira_img = "https://dujrsrsgsd3nh.cloudfront.net/img/emoticons/jira-1350074257.png"
-
 // This is a json response for a JIRA webhook (more or less) according to
 // https://developer.atlassian.com/jiradev/jira-architecture/webhooks
 type JIRAWebevent struct {
@@ -82,7 +79,7 @@ type ChangleLogItems struct {
 	To         string `json:"to"`
 	FromString string `json:"fromString"`
 	From       string `json:"from"`
-	FieldType  string `json:fieldtype"`
+	FieldType  string `json:"fieldtype"`
 	Field      string `json:"field"`
 }
 
@@ -108,6 +105,7 @@ type IssueFieldData struct {
 	Labels      []string          `json:"labels"`
 	Status      JIRAIssueStatus   `json:"status"`
 	Comment     InnerComment      `json:"comment"`
+	IssueType   JIRAIssueType     `json:"issuetype"`
 }
 
 type JIRAIssueAssignee struct {
@@ -118,7 +116,7 @@ type JIRAIssueAssignee struct {
 	AvatarUrls  map[string]string `json:"avatarUrls"`
 	DisplayName string            `json:"displayName"`
 	Active      bool              `json:"active"`
-	timeZone    string            `json:"timeZone"`
+	Timezone    string            `json:"timeZone"`
 }
 
 type JIRAIssuePriority struct {
@@ -130,8 +128,17 @@ type JIRAIssueStatus struct {
 	Name string `json:"name"`
 }
 
+type JIRAIssueType struct {
+	Self        string `json:"self"`
+	Id          string `json:"id"`
+	Description string `json:"description"`
+	IconUrl     string `json:"iconUrl"`
+	Name        string `json:"name"`
+	Subtask     bool   `json:"subtask"`
+}
+
 type InnerComment struct {
-	StartAt    int           `json"startAt"`
+	StartAt    int           `json:"startAt"`
 	MaxResults int           `json:"maxResults"`
 	Total      int           `json:"total"`
 	Comments   []JIRAComment `json:"comments"`
