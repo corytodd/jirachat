@@ -15,6 +15,7 @@ type Slacker interface {
 	IssueDeleted(JIRAWebevent) error
 	IssueUpdated(JIRAWebevent) error
 	WorklogUpdated(JIRAWebevent) error
+	CommentCreated(JIRAWebevent) error
 	SendErrorNotice(string, *SlackConfig)
 }
 

@@ -11,7 +11,7 @@ const (
 	userLinkBase  = "https://%s.atlassian.net/secure/ViewProfile.jspa?name=%s"
 )
 
-var ErrSlackParse = errors.New("Unknown Event Failed Slack Parsing")
+var ErrSlackParse = errors.New("unknown Event Failed Slack Parsing")
 
 // SlackMessage represents a payload sent to Slack.
 // The values are sent to Slack via incoming-webhook.
@@ -84,12 +84,12 @@ func (s *SlackService) IssueUpdated(event *JIRAWebevent) error {
 		title = fmt.Sprintf("%s commented on %s", user,
 			event.GetIssueLink(s.Config))
 		fields = []Field{
-			Field{
+			{
 				Title: "Issue",
 				Value: event.Issue.Fields.Summary,
 				Short: false,
 			},
-			Field{
+			{
 				Title: "Comment",
 				Value: event.Comment.Body,
 				Short: false,
@@ -101,12 +101,12 @@ func (s *SlackService) IssueUpdated(event *JIRAWebevent) error {
 			title = fmt.Sprintf("%s changed status of %s", user,
 				event.GetIssueLink(s.Config))
 			fields = []Field{
-				Field{
+				{
 					Title: "From",
 					Value: event.Changelog.Items[0].FromString,
 					Short: false,
 				},
-				Field{
+				{
 					Title: "To",
 					Value: event.Changelog.Items[0].ToString,
 					Short: false,
@@ -125,12 +125,12 @@ func (s *SlackService) IssueUpdated(event *JIRAWebevent) error {
 				to = event.Changelog.Items[0].ToString
 			}
 			fields = []Field{
-				Field{
+				{
 					Title: "From",
 					Value: from,
 					Short: false,
 				},
-				Field{
+				{
 					Title: "To",
 					Value: to,
 					Short: false,
@@ -174,17 +174,17 @@ func (s *SlackService) IssueUpdated(event *JIRAWebevent) error {
 func (s *SlackService) IssueCreated(event *JIRAWebevent) error {
 	payload := SlackMessage{}
 	fields := []Field{
-		Field{
+		{
 			Title: "Summary",
 			Value: event.Issue.Fields.Summary,
 			Short: false,
 		},
-		Field{
+		{
 			Title: "Assignee",
 			Value: event.Issue.Fields.Assignee.DisplayName,
 			Short: true,
 		},
-		Field{
+		{
 			Title: "Priority",
 			Value: event.Issue.Fields.Priority.Name,
 			Short: true,
@@ -218,12 +218,12 @@ func (s *SlackService) IssueDeleted(event *JIRAWebevent) error {
 	}
 
 	fields := []Field{
-		Field{
+		{
 			Title: "Issue",
 			Value: event.Issue.Fields.Summary,
 			Short: false,
 		},
-		Field{
+		{
 			Title: "Last Comment",
 			Value: body,
 			Short: false,
@@ -275,7 +275,7 @@ func (s *SlackService) WorklogUpdated(event *JIRAWebevent) error {
 	}
 
 	fields := []Field{
-		Field{
+		{
 			Title: "Total Work",
 			Value: timestr,
 			Short: false,
@@ -284,6 +284,41 @@ func (s *SlackService) WorklogUpdated(event *JIRAWebevent) error {
 
 	title := fmt.Sprintf("%s updated work log %s", event.GetUserLink(s.Config),
 		event.GetIssueLink(s.Config))
+	attachment := Attachment{
+		Fallback: title,
+		Pretext:  title,
+		Color:    event.GetPriorityColor(),
+		Fields:   fields,
+	}
+
+	payload.Channel = s.Config.Channel
+	payload.Username = s.Config.BotName
+	payload.Icon_url = event.User.LargeAvatar()
+	payload.Unfurl_links = true
+	payload.Text = ""
+	payload.Attachments = []Attachment{attachment}
+	return payload.SendEvent(s.Config)
+}
+
+func(s *SlackService) CommentCreated(event *JIRAWebevent) error{
+	payload := SlackMessage{}
+	var fields []Field
+	title := ""
+	user := event.GetUserLink(s.Config)
+	title = fmt.Sprintf("%s commented on %s", user,
+		event.GetIssueLink(s.Config))
+	fields = []Field{
+		{
+			Title: "Issue",
+			Value: event.Issue.Fields.Summary,
+			Short: false,
+		},
+		{
+			Title: "Comment",
+			Value: event.Comment.Body,
+			Short: false,
+		}}
+
 	attachment := Attachment{
 		Fallback: title,
 		Pretext:  title,
