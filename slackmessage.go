@@ -304,7 +304,7 @@ func(s *SlackService) CommentCreated(event *JIRAWebevent) error{
 	payload := SlackMessage{}
 	var fields []Field
 	title := ""
-	user := event.GetUserLink(s.Config)
+	user := event.Comment.GetUserLink(s.Config)
 	title = fmt.Sprintf("%s commented on %s", user,
 		event.GetIssueLink(s.Config))
 	fields = []Field{
@@ -347,6 +347,13 @@ func (e *JIRAWebevent) GetIssueLink(s *SlackConfig) string {
 func (e *JIRAWebevent) GetUserLink(s *SlackConfig) string {
 	link := fmt.Sprintf(userLinkBase, s.Domain, e.User.Name)
 	return fmt.Sprintf("<%s|%s>", link, e.User.DisplayName)
+}
+
+// Returns a markdown formatted user link with the user name
+// as the link text
+func (e *JIRAComment) GetUserLink(s *SlackConfig) string {
+	link := fmt.Sprintf(userLinkBase, s.Domain, e.Author.Name)
+	return fmt.Sprintf("<%s|%s>", link, e.Author.DisplayName)
 }
 
 // Convert priority id to hex color string
