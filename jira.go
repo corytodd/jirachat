@@ -2,8 +2,10 @@ package jirachat
 
 import (
 	"encoding/json"
+	"github.com/buger/jsonparser"
 	"io/ioutil"
 	"net/http"
+	"strings"
 )
 
 // This is a json response for a JIRA webhook (more or less) according to
@@ -106,6 +108,11 @@ type IssueFieldData struct {
 	Status      JIRAIssueStatus   `json:"status"`
 	Comment     InnerComment      `json:"comment"`
 	IssueType   JIRAIssueType     `json:"issuetype"`
+	Project     JIRAProject       `json:"project"`
+	// CustomFields is a map of customfield_xxx from your JIRA instance. The key will match whichever
+	// custom fields you have created. The contents obviously depend on what you have created. The value
+	// the raw string value of whatever your field contains.
+	CustomFields map[string]string
 }
 
 type JIRAIssueAssignee struct {
@@ -144,6 +151,14 @@ type InnerComment struct {
 	Comments   []JIRAComment `json:"comments"`
 }
 
+type JIRAProject struct {
+	Self       string            `json:"self"`
+	Id         string            `json:"id"`
+	Key        string            `json:"key"`
+	Name       string            `json:"name"`
+	AvatarUrls map[string]string `json:"avatarUrls"`
+}
+
 // Returns the 16x16 user Avatar
 // Note: If this is not a Gravatar, it will not render
 // in Slack message because uploaded images are private to your JIRA instance.
@@ -174,6 +189,19 @@ func Parse(r *http.Request) (JIRAWebevent, error) {
 	// is is safe to ignore. We return the error so you at least know
 	// that there is some oddly formed data.
 	err = json.Unmarshal(body, &event)
+
+	event.Issue.Fields.CustomFields = make(map[string]string, 0)
+
+	if len(event.Issue.Id) != 0 {
+		jsonparser.ObjectEach(body, func(key []byte, value []byte, dataType jsonparser.ValueType, offset int) error {
+			k := string(key)
+			if strings.HasPrefix(k, "customfield_") {
+				event.Issue.Fields.CustomFields[string(key)] = string(value)
+			}
+			return nil
+		}, "issue", "fields")
+	}
+
 	return event, err
 }
 
