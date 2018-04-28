@@ -2,14 +2,14 @@ package jirachat
 
 import (
 	"encoding/json"
+	"github.com/buger/jsonparser"
 	"io/ioutil"
 	"net/http"
+	"strings"
 )
 
-const jira_img = "https://dujrsrsgsd3nh.cloudfront.net/img/emoticons/jira-1350074257.png"
-
 // This is a json response for a JIRA webhook (more or less) according to
-//https://developer.atlassian.com/display/JIRADEV/JIRA+Webhooks+Overview
+// https://developer.atlassian.com/jiradev/jira-architecture/webhooks
 type JIRAWebevent struct {
 	// Internal ID of the event
 	Id int `json:"id,omitempty"`
@@ -23,6 +23,8 @@ type JIRAWebevent struct {
 	// User who triggered event
 	User JIRAUser `json:"user"`
 
+	// An array of change items, with one entry for each field that has
+	// been changed. The changelog is only provided for the issue_updated event.
 	Changelog JIRAChangelog `json:"changelog"`
 
 	// Set if this event is a jira_updated event and a comment was made
@@ -32,6 +34,9 @@ type JIRAWebevent struct {
 	WebhookEvent string `json:"webhookEvent"`
 }
 
+// Decribes the JIRAIssue object defined in the JIRA 5.1 REST docs
+//
+// https://docs.atlassian.com/jira/REST/5.1/#id204637
 type JIRAIssue struct {
 	Expand string `json:"expand"`
 
@@ -48,6 +53,9 @@ type JIRAIssue struct {
 	Fields IssueFieldData `json:"fields"`
 }
 
+// Describes the JIRAUser object defined in the JIRA 5.1 REST docs
+//
+// https://docs.atlassian.com/jira/REST/5.1/#id202197
 type JIRAUser struct {
 	Self string `json:"self"`
 
@@ -73,10 +81,13 @@ type ChangleLogItems struct {
 	To         string `json:"to"`
 	FromString string `json:"fromString"`
 	From       string `json:"from"`
-	FieldType  string `json:fieldtype"`
+	FieldType  string `json:"fieldtype"`
 	Field      string `json:"field"`
 }
 
+// Describes the JIRAComment object defined in the JIRA 5.1 REST docs
+//
+// https://docs.atlassian.com/jira/REST/5.1/#id204337
 type JIRAComment struct {
 	Self         string   `json:"self"`
 	Id           string   `json:"id"`
@@ -97,8 +108,11 @@ type IssueFieldData struct {
 	Status      JIRAIssueStatus   `json:"status"`
 	Comment     InnerComment      `json:"comment"`
 	IssueType   JIRAIssueType     `json:"issuetype"`
-	Project     JIRAIssueProject  `json:"project"`
-	CF_10101    []JIRAUser        `json:"customfield_10101"` // Approved By ECN
+	Project     JIRAProject       `json:"project"`
+	// CustomFields is a map of customfield_xxx from your JIRA instance. The key will match whichever
+	// custom fields you have created. The contents obviously depend on what you have created. The value
+	// the raw string value of whatever your field contains.
+	CustomFields map[string]string
 }
 
 type JIRAIssueAssignee struct {
@@ -109,7 +123,7 @@ type JIRAIssueAssignee struct {
 	AvatarUrls  map[string]string `json:"avatarUrls"`
 	DisplayName string            `json:"displayName"`
 	Active      bool              `json:"active"`
-	timeZone    string            `json:"timeZone"`
+	Timezone    string            `json:"timeZone"`
 }
 
 type JIRAIssuePriority struct {
@@ -130,18 +144,21 @@ type JIRAIssueType struct {
 	subtask     bool   `json:"subtask"`
 }
 
-type JIRAIssueProject struct {
-	Self string `json:"self"`
-	Id   string `json:"id"`
-	Name string `json:"name"`
-	Key  string `json:"key"`
-}
-
 type InnerComment struct {
-	StartAt    int           `json"startAt"`
+	StartAt    int           `json:"startAt"`
 	MaxResults int           `json:"maxResults"`
 	Total      int           `json:"total"`
 	Comments   []JIRAComment `json:"comments"`
+}
+
+type JIRAProject struct {
+	Self       string            `json:"self"`
+	Id         string            `json:"id"`
+	Key        string            `json:"key"`
+	Name       string            `json:"name"`
+	IconUrl    string            `json:"iconUrl"`
+	Subtask    bool              `json:"subtask"`
+	AvatarUrls map[string]string `json:"avatarUrls"`
 }
 
 // Returns the 16x16 user Avatar
@@ -174,6 +191,19 @@ func Parse(r *http.Request) (JIRAWebevent, error) {
 	// is is safe to ignore. We return the error so you at least know
 	// that there is some oddly formed data.
 	err = json.Unmarshal(body, &event)
+
+	event.Issue.Fields.CustomFields = make(map[string]string, 0)
+
+	if len(event.Issue.Id) != 0 {
+		jsonparser.ObjectEach(body, func(key []byte, value []byte, dataType jsonparser.ValueType, offset int) error {
+			k := string(key)
+			if strings.HasPrefix(k, "customfield_") {
+				event.Issue.Fields.CustomFields[string(key)] = string(value)
+			}
+			return nil
+		}, "issue", "fields")
+	}
+
 	return event, err
 }
 
