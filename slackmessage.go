@@ -328,7 +328,7 @@ func(s *SlackService) CommentCreated(event *JIRAWebevent) error{
 
 	payload.Channel = s.Config.Channel
 	payload.Username = s.Config.BotName
-	payload.Icon_url = event.User.LargeAvatar()
+	payload.Icon_url = event.Comment.Author.LargeAvatar()
 	payload.Unfurl_links = true
 	payload.Text = ""
 	payload.Attachments = []Attachment{attachment}
