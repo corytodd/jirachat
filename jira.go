@@ -139,9 +139,9 @@ type JIRAIssueType struct {
 	Self        string `json:"self"`
 	Id          string `json:"id"`
 	Description string `json:"description"`
-	IconUrl     string `json:"iconUrl"`
+	IconURL     string `json:"iconUrl"`
 	Name        string `json:"name"`
-	Subtask     bool   `json:"subtask"`
+	subtask     bool   `json:"subtask"`
 }
 
 type InnerComment struct {
@@ -156,6 +156,8 @@ type JIRAProject struct {
 	Id         string            `json:"id"`
 	Key        string            `json:"key"`
 	Name       string            `json:"name"`
+	IconUrl    string            `json:"iconUrl"`
+	Subtask    bool              `json:"subtask"`
 	AvatarUrls map[string]string `json:"avatarUrls"`
 }
 

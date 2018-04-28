@@ -1,8 +1,8 @@
-# polychat-jira
-JIRA Webhook handler that forwards to Hipchat and/or Slack
+# jirachat
+Golang JIRA Webhook handler that forwards to Hipchat and/or Slack
 
 
-This work is mostly taken from https://github.com/tbruyelle/hipchat-go for the Hipchat portions
+This work is mostly adapted from https://github.com/tbruyelle/hipchat-go for the Hipchat portions
 
 The Slack integration is adapted from https://github.com/daikikohara/enotify-slack
 
